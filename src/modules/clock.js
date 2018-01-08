@@ -1,10 +1,11 @@
-import { uniq, concat } from 'lodash';
+import { uniq, concat, indexOf } from 'lodash';
 import BufferLoader from './BufferLoader';
 
 const TICK = 'TICK';
 const START_CLOCK = 'START_CLOCK';
 const SCHEDULE_TRACK = 'SCHEDULE_TRACK';
 const REMOVE_TRACK = 'REMOVE_TRACK';
+const TOGGLE_TRACK = 'TOGGLE_TRACK';
 
 const BPM = 128;
 const TIME_PER_BEAT = 60000 / BPM;
@@ -34,10 +35,8 @@ const defaultState = {
   lastTick: 0,
   nextTime: 0,
   startTime: 0,
-  scheduleQueue: [],
   bufferList: [],
-  playingTracks: [2,3]
-  // playingTracks: []
+  playingTracks: [2]
 };
 
 export default function(state = defaultState, action = {}) {
@@ -46,7 +45,6 @@ export default function(state = defaultState, action = {}) {
       return {
         ...state,
         tickTimer: action.payload.currentTime,
-        scheduleQueue: action.payload.scheduleQueue,
         bufferList: action.payload.bufferList,
         startTime: action.payload.currentTime
       };
@@ -54,12 +52,8 @@ export default function(state = defaultState, action = {}) {
     case TICK:
       return doTick(state, action.payload);
 
-    case SCHEDULE_TRACK:
-      const trackNumber = action.payload;
-      return {
-        ...state,
-        playingTracks: uniq(concat(state.playingTracks, trackNumber))
-      };
+    case TOGGLE_TRACK:
+      return doTrackToggle(state, action.payload);
 
     default:
       return state;
@@ -124,12 +118,28 @@ function getTickNumber(ct) {
   return Math.floor(ctms / TIME_PER_BEAT);
 }
 
+function doTrackToggle(state, trackNumber) {
+  let playingTracks;
+  const trackIndex = indexOf(state.playingTracks, trackNumber);
+
+  if(trackIndex > -1) {
+    playingTracks = state.playingTracks;
+    playingTracks.splice(trackIndex, 1);
+  } else {
+    playingTracks = uniq(concat(state.playingTracks, trackNumber));
+  }
+
+  return {
+    ...state,
+    playingTracks
+  };
+}
+
 export function startClock(bufferList) {
   return {
     type: START_CLOCK,
     payload: {
       currentTime: audioContext.currentTime,
-      scheduleQueue: bufferList,
       bufferList
     }
   }
@@ -158,9 +168,9 @@ export function loadTracks() {
   });
 }
 
-export function scheduleTrack(trackNumber) {
+export function toggleTrack(trackNumber) {
   return {
-    type: SCHEDULE_TRACK,
+    type: TOGGLE_TRACK,
     payload: trackNumber
   };
 }

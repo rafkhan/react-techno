@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { scheduleTrack } from '../modules/clock';
+import { toggleTrack } from '../modules/clock';
 
 class Main extends Component {
   render() {
@@ -38,7 +38,7 @@ export default connect(
   },
 
   (dispatch, props) => {
-    const startTrack = (trackNumber) => dispatch(scheduleTrack(trackNumber));
+    const startTrack = (trackNumber) => dispatch(toggleTrack(trackNumber));
     return {
       startTrack
     };
