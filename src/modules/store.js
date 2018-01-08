@@ -1,6 +1,8 @@
 import { createStore, combineReducers } from 'redux';
 import clock, {
-  tick
+  tick,
+  loadTracks,
+  startClock
 } from './clock';
 
 const rootReducer = combineReducers({
@@ -10,7 +12,11 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer);
 export default store;
 
-// START THE ENGINES
-setInterval(() => {
-  store.dispatch(tick());
-}, 10);
+loadTracks()
+  .then((bufferList) => {
+    store.dispatch(startClock(bufferList));
+    // START THE ENGINES
+    setInterval(() => {
+      store.dispatch(tick());
+    }, 8);
+  });
