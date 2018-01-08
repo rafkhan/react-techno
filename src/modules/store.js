@@ -12,10 +12,10 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer);
 export default store;
 
+// START THE ENGINES
 loadTracks()
   .then((bufferList) => {
     store.dispatch(startClock(bufferList));
-    // START THE ENGINES
     setInterval(() => {
       store.dispatch(tick());
     }, 8);

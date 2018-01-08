@@ -9,10 +9,10 @@ class Main extends Component {
 
     return (
       <div>
-        <div>{clock.currentTick}</div>
-        <div>{clock.tickTimer} </div>
-        <div>{clock.nextTime} </div>
-        <div>{clock.tickTimer < clock.nextTime ? 'true' : 'false'}</div>
+        <div>Beat: <strong>{clock.currentTick}</strong></div>
+        <div>Current Time: <strong>{clock.tickTimer}</strong></div>
+        <div>Next Time: <strong>{clock.nextTime}</strong></div>
+        <div>Next Time ahead: <strong>{clock.tickTimer < clock.nextTime ? 'true' : 'false'}</strong></div>
       </div>
     );
   }

@@ -6,12 +6,24 @@ const START_CLOCK = 'START_CLOCK';
 const BPM = 128;
 const TIME_PER_BEAT = 60000 / BPM;
 
+const SAMPLES = [
+  '/sounds/kick.wav',
+  '/sounds/claps.wav',
+  '/sounds/hats.wav',
+  '/sounds/bass.wav',
+  '/sounds/synth.wav',
+];
+
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
 //For Safari audioContext is disabled until there's a user click
 if(audioContext.state === 'suspended'){
   audioContext.resume();
 };
+
+const gainNode = audioContext.createGain();
+gainNode.gain.value = 0.05;
+gainNode.connect(audioContext.destination);
 
 const defaultState = {
   tickTimer: audioContext.currentTime,
@@ -20,7 +32,8 @@ const defaultState = {
   nextTime: 0,
   startTime: 0,
   scheduleQueue: [],
-  bufferList: []
+  bufferList: [],
+  playingTracks: [0,1,2,3]
 };
 
 export default function(state = defaultState, action = {}) {
@@ -30,6 +43,7 @@ export default function(state = defaultState, action = {}) {
         ...state,
         tickTimer: action.payload.currentTime,
         scheduleQueue: action.payload.scheduleQueue,
+        bufferList: action.payload.bufferList,
         startTime: action.payload.currentTime
       };
     case TICK:
@@ -44,35 +58,26 @@ function doTick(state, payload) {
   let lastTick;
   let nextTime;
 
-  // tick changed
+  // tick changed - fired once per tick
   if(currentTick > state.currentTick) {
     lastTick = state.currentTick;
     nextTime = getNextTime(state);
 
-    // scheduleMetronome(nextTime);
+    scheduleMetronome(nextTime);
 
-    if(state.scheduleQueue.length > 0 && state.currentTick % 16 === 1) {
-      state.scheduleQueue.forEach(buf => {
+    // TRIGGER LOOPS EVERY 16 BARS
+    if(state.playingTracks.length > 0 && state.currentTick % 16 === 1) {
+      state.playingTracks.forEach(trackNumber => {
         const source = audioContext.createBufferSource();
-        source.buffer = buf;
+        source.buffer = state.bufferList[trackNumber];
         source.connect(audioContext.destination);
         source.start(nextTime);
       });
-
-      state.bufferList = state.scheduleQueue;
-      state.scheduleQueue = [];
-    } else if(state.scheduleQueue.length === 0) {
-      state.scheduleQueue = state.bufferList;
     }
+
   } else {
     lastTick = state.lastTick;
     nextTime = state.nextTime;
-  }
-
-  // TRIGGER LOOPS!!!!!!!!!!!!!!
-  if(state.currentTick % 16 === 1 && state.scheduleQueue.length === 0) {
-    // console.log(state.bufferList);
-    // state.scheduleQueue = state.bufferList;
   }
 
   return {
@@ -86,10 +91,11 @@ function doTick(state, payload) {
 
 function scheduleMetronome(nextTime) {
   const oscillator = audioContext.createOscillator();
-  oscillator.frequency.value = 600;
-  oscillator.connect(audioContext.destination);
+  oscillator.frequency.value = 400;
+  oscillator.type = 'square';
+  oscillator.connect(gainNode);
   oscillator.start(nextTime);
-  oscillator.stop(nextTime + 0.08);
+  oscillator.stop(nextTime + 0.075);
 }
 
 function getNextTime(state) {
@@ -102,11 +108,13 @@ function getTickNumber(ct) {
 }
 
 export function startClock(bufferList) {
+  console.log(bufferList);
   return {
     type: START_CLOCK,
     payload: {
       currentTime: audioContext.currentTime,
-      scheduleQueue: bufferList
+      scheduleQueue: bufferList,
+      bufferList
     }
   }
 }
@@ -124,13 +132,7 @@ export function loadTracks() {
   return new Promise((resolve, reject) => {
     const bufferLoader = new BufferLoader(
       audioContext,
-      [
-        '/sounds/kick.wav',
-        '/sounds/claps.wav',
-        '/sounds/hats.wav',
-        '/sounds/bass.wav',
-        '/sounds/synth.wav',
-      ],
+      SAMPLES,
       (bufferList) => {
         resolve(bufferList);
       } 
