@@ -1,7 +1,10 @@
+import { uniq, concat } from 'lodash';
 import BufferLoader from './BufferLoader';
 
 const TICK = 'TICK';
 const START_CLOCK = 'START_CLOCK';
+const SCHEDULE_TRACK = 'SCHEDULE_TRACK';
+const REMOVE_TRACK = 'REMOVE_TRACK';
 
 const BPM = 128;
 const TIME_PER_BEAT = 60000 / BPM;
@@ -33,7 +36,8 @@ const defaultState = {
   startTime: 0,
   scheduleQueue: [],
   bufferList: [],
-  playingTracks: [0,1,2,3]
+  playingTracks: [1,2,3]
+  // playingTracks: []
 };
 
 export default function(state = defaultState, action = {}) {
@@ -46,8 +50,17 @@ export default function(state = defaultState, action = {}) {
         bufferList: action.payload.bufferList,
         startTime: action.payload.currentTime
       };
+
     case TICK:
       return doTick(state, action.payload);
+
+    case SCHEDULE_TRACK:
+      const trackNumber = action.payload;
+      return {
+        ...state,
+        playingTracks: uniq(concat(state.playingTracks, trackNumber))
+      };
+
     default:
       return state;
   }
@@ -63,17 +76,10 @@ function doTick(state, payload) {
     lastTick = state.currentTick;
     nextTime = getNextTime(state);
 
-    scheduleMetronome(nextTime);
+    // scheduleMetronome(nextTime);
 
     // TRIGGER LOOPS EVERY 16 BARS
-    if(state.playingTracks.length > 0 && state.currentTick % 16 === 1) {
-      state.playingTracks.forEach(trackNumber => {
-        const source = audioContext.createBufferSource();
-        source.buffer = state.bufferList[trackNumber];
-        source.connect(audioContext.destination);
-        source.start(nextTime);
-      });
-    }
+    scheduleLoops(state, nextTime);
 
   } else {
     lastTick = state.lastTick;
@@ -87,6 +93,17 @@ function doTick(state, payload) {
     lastTick,
     nextTime
   };
+}
+
+function scheduleLoops(state, nextTime) {
+  if(state.playingTracks.length > 0 && state.currentTick % 16 === 1) {
+    state.playingTracks.forEach(trackNumber => {
+      const source = audioContext.createBufferSource();
+      source.buffer = state.bufferList[trackNumber];
+      source.connect(audioContext.destination);
+      source.start(nextTime);
+    });
+  }
 }
 
 function scheduleMetronome(nextTime) {
@@ -108,7 +125,6 @@ function getTickNumber(ct) {
 }
 
 export function startClock(bufferList) {
-  console.log(bufferList);
   return {
     type: START_CLOCK,
     payload: {
@@ -140,4 +156,11 @@ export function loadTracks() {
 
     bufferLoader.load();
   });
+}
+
+export function scheduleTrack(trackNumber) {
+  return {
+    type: SCHEDULE_TRACK,
+    payload: trackNumber
+  };
 }

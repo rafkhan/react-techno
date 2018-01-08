@@ -1,3 +1,8 @@
+/*
+ * Taken from:
+ * https://www.html5rocks.com/en/tutorials/webaudio/intro/js/buffer-loader.js
+ */
+
 function BufferLoader(context, urlList, callback) {
   this.context = context;
   this.urlList = urlList;
