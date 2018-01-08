@@ -12,6 +12,7 @@ class Main extends Component {
         <div>{clock.currentTick}</div>
         <div>{clock.tickTimer} </div>
         <div>{clock.nextTime} </div>
+        <div>{clock.tickTimer < clock.nextTime ? 'true' : 'false'}</div>
       </div>
     );
   }

@@ -18,7 +18,9 @@ const defaultState = {
   currentTick: 0,
   lastTick: 0,
   nextTime: 0,
+  startTime: 0,
   scheduleQueue: [],
+  bufferList: []
 };
 
 export default function(state = defaultState, action = {}) {
@@ -27,7 +29,8 @@ export default function(state = defaultState, action = {}) {
       return {
         ...state,
         tickTimer: action.payload.currentTime,
-        scheduleQueue: action.payload.scheduleQueue
+        scheduleQueue: action.payload.scheduleQueue,
+        startTime: action.payload.currentTime
       };
     case TICK:
       return doTick(state, action.payload);
@@ -46,9 +49,9 @@ function doTick(state, payload) {
     lastTick = state.currentTick;
     nextTime = getNextTime(state);
 
-    scheduleMetronome(nextTime);
+    // scheduleMetronome(nextTime);
 
-    if(state.scheduleQueue.length > 0) {
+    if(state.scheduleQueue.length > 0 && state.currentTick % 16 === 1) {
       state.scheduleQueue.forEach(buf => {
         const source = audioContext.createBufferSource();
         source.buffer = buf;
@@ -56,11 +59,20 @@ function doTick(state, payload) {
         source.start(nextTime);
       });
 
+      state.bufferList = state.scheduleQueue;
       state.scheduleQueue = [];
+    } else if(state.scheduleQueue.length === 0) {
+      state.scheduleQueue = state.bufferList;
     }
   } else {
     lastTick = state.lastTick;
     nextTime = state.nextTime;
+  }
+
+  // TRIGGER LOOPS!!!!!!!!!!!!!!
+  if(state.currentTick % 16 === 1 && state.scheduleQueue.length === 0) {
+    // console.log(state.bufferList);
+    // state.scheduleQueue = state.bufferList;
   }
 
   return {
@@ -77,11 +89,11 @@ function scheduleMetronome(nextTime) {
   oscillator.frequency.value = 600;
   oscillator.connect(audioContext.destination);
   oscillator.start(nextTime);
-  oscillator.stop(nextTime + 0.1);
+  oscillator.stop(nextTime + 0.08);
 }
 
 function getNextTime(state) {
-  return ((state.tickTimer * 1000) % ((state.currentTick + 1) * TIME_PER_BEAT) / 1000);
+  return (((state.tickTimer * 1000) % ((state.currentTick + 1) * TIME_PER_BEAT) / 1000) + state.startTime);
 }
 
 function getTickNumber(ct) {
