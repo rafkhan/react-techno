@@ -12,16 +12,16 @@ class Main extends Component {
 
     return (
       <div>
-        <div>Beat: <strong>{clock.currentTick}</strong></div>
+        <div>Tick: <strong>{clock.currentTick}</strong></div>
         <div>Bar Beat: <strong>{((clock.currentTick - 2) % 4) + 1}</strong></div>
         <div>Current Time: <strong>{clock.tickTimer}</strong></div>
         <div>Next Beat Time: <strong>{clock.nextTime}</strong></div>
         <div>Next Time ahead: <strong>{clock.tickTimer < clock.nextTime ? 'true' : 'false'}</strong></div>
         <div>Loop Schedule Queue: <strong>{JSON.stringify(clock.playingTracks)}</strong></div>
 
-        <button onClick={() => startTrack(0)}>KICK</button>
-        <button onClick={() => startTrack(1)}>CLAP</button>
-        <button onClick={() => startTrack(2)}>HI HAT</button>
+        <button onClick={() => startTrack(0)}>DRUM KICK</button>
+        <button onClick={() => startTrack(1)}>DRUM CLAP</button>
+        <button onClick={() => startTrack(2)}>DRUM HI HAT</button>
         <button onClick={() => startTrack(3)}>SYNTH BASS</button>
         <button onClick={() => startTrack(4)}>SYNTH LEAD</button>
       </div>
