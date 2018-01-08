@@ -36,7 +36,7 @@ const defaultState = {
   startTime: 0,
   scheduleQueue: [],
   bufferList: [],
-  playingTracks: [1,2,3]
+  playingTracks: [2,3]
   // playingTracks: []
 };
 
@@ -78,7 +78,7 @@ function doTick(state, payload) {
 
     // scheduleMetronome(nextTime);
 
-    // TRIGGER LOOPS EVERY 16 BARS
+    // TRIGGER LOOPS EVERY 4 BEATS / 1 BAR
     scheduleLoops(state, nextTime);
 
   } else {
@@ -96,7 +96,7 @@ function doTick(state, payload) {
 }
 
 function scheduleLoops(state, nextTime) {
-  if(state.playingTracks.length > 0 && state.currentTick % 16 === 1) {
+  if(state.playingTracks.length > 0 && state.currentTick % 4 === 1) {
     state.playingTracks.forEach(trackNumber => {
       const source = audioContext.createBufferSource();
       source.buffer = state.bufferList[trackNumber];

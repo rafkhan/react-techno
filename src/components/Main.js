@@ -13,8 +13,9 @@ class Main extends Component {
     return (
       <div>
         <div>Beat: <strong>{clock.currentTick}</strong></div>
+        <div>Bar Beat: <strong>{((clock.currentTick - 2) % 4) + 1}</strong></div>
         <div>Current Time: <strong>{clock.tickTimer}</strong></div>
-        <div>Next Time: <strong>{clock.nextTime}</strong></div>
+        <div>Next Beat Time: <strong>{clock.nextTime}</strong></div>
         <div>Next Time ahead: <strong>{clock.tickTimer < clock.nextTime ? 'true' : 'false'}</strong></div>
         <div>Loop Schedule Queue: <strong>{JSON.stringify(clock.playingTracks)}</strong></div>
 
