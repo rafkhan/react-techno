@@ -10,7 +10,7 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer);
 export default store;
 
+// START THE ENGINES
 setInterval(() => {
-  const state = store.getState();
   store.dispatch(tick());
 }, 10);

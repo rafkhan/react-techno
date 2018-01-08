@@ -12,16 +12,22 @@ if(audioContext.state === 'suspended'){
   audioContext.resume();
 };
 
-
-
 const bufferLoader = new BufferLoader(
   audioContext,
   [
-    '../sounds/hyper-reality/br-jam-loop.wav',
-    '../sounds/hyper-reality/laughter.wav',
+    '/sounds/kick.wav',
+    '/sounds/claps.wav',
+    '/sounds/hats.wav',
+    '/sounds/bass.wav',
+    '/sounds/synth.wav',
   ],
-  () => {
-
+  (bufferList) => {
+    bufferList.forEach(buf => {
+      const source = audioContext.createBufferSource();
+      source.buffer = buf;
+      source.connect(audioContext.destination);
+      source.start(0);
+    });
   } 
 );
 
