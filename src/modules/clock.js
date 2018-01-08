@@ -1,8 +1,9 @@
+import BufferLoader from './BufferLoader';
+
 const TICK = 'TICK';
 
 const BPM = 128;
 const TIME_PER_BEAT = 60000 / BPM;
-
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioContext = new AudioContext();
@@ -11,7 +12,20 @@ if(audioContext.state === 'suspended'){
   audioContext.resume();
 };
 
-// oscillator.start(0); // Play instantly
+
+
+const bufferLoader = new BufferLoader(
+  audioContext,
+  [
+    '../sounds/hyper-reality/br-jam-loop.wav',
+    '../sounds/hyper-reality/laughter.wav',
+  ],
+  () => {
+
+  } 
+);
+
+bufferLoader.load();
 
 const defaultState = {
   tickTimer: audioContext.currentTime,
@@ -22,35 +36,42 @@ const defaultState = {
 };
 
 export default function(state = defaultState, action = {}) {
-  const payload = action.payload;
   switch(action.type) {
-
-    // TODO make this shorter lol
     case TICK:
-      const currentTick = getTickNumber(payload.currentTime);
-      let lastTick;
-      let nextTime;
-      // tick changed
-      if(currentTick > state.currentTick) {
-        lastTick = state.currentTick;
-        nextTime = getNextTime(state);
-
-        // scheduleMetronome(nextTime);
-      } else {
-        lastTick = state.lastTick;
-        nextTime = state.nextTime;
-      }
-
-      return {
-        ...state,
-        tickTimer: payload.currentTime,
-        currentTick,
-        lastTick,
-        nextTime
-      };
+      return doTick(state, action.payload);
     default:
       return state;
   }
+}
+
+function doTick(state, payload) {
+  const currentTick = getTickNumber(payload.currentTime);
+  let lastTick;
+  let nextTime;
+
+  // tick changed
+  if(currentTick > state.currentTick) {
+    lastTick = state.currentTick;
+    nextTime = getNextTime(state);
+
+    // scheduleMetronome(nextTime);
+  } else {
+    lastTick = state.lastTick;
+    nextTime = state.nextTime;
+  }
+
+  // Schedule sounds
+  if(state.scheduleQueue.length > 0) {
+
+  }
+
+  return {
+    ...state,
+    tickTimer: payload.currentTime,
+    currentTick,
+    lastTick,
+    nextTime
+  };
 }
 
 function scheduleMetronome(nextTime) {
@@ -76,13 +97,4 @@ export function tick() {
       currentTime: audioContext.currentTime
     }
   }
-}
-
-export function scheduleNextPlay(clockState) {
-  // if(clockState.scheduleQueue.length > 0) {
-  //   const ct = audioContext.currentTime;
-  //   const deltaTime = ct - clockState.tickTime;
-  //   const nextTime = TIME_PER_BEAT - deltaTime;
-  //   oscillator.start(nextTime);
-  // }
 }
